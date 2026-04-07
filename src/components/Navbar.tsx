@@ -1,20 +1,29 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Sun, Moon } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Menu, X, Sun, Moon, LogOut, Shield } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "@/components/ThemeProvider";
-
-const navLinks = [
-  { to: "/", label: "Home" },
-  { to: "/blog", label: "Journal" },
-  { to: "/health-guide", label: "Health Guide" },
-  { to: "/book-consultation", label: "Book Consultation" },
-];
+import { useAuth } from "@/contexts/AuthContext";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
+  const { session, isAdmin, signOut, profile } = useAuth();
+
+  const navLinks = [
+    { to: "/", label: "Home" },
+    { to: "/blog", label: "Journal" },
+    { to: "/health-guide", label: "Health Guide" },
+    ...(session ? [{ to: "/book-consultation", label: "Book Consultation" }] : []),
+    ...(isAdmin ? [{ to: "/admin", label: "Admin" }] : []),
+  ];
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass-card">
@@ -38,6 +47,29 @@ const Navbar = () => {
               {link.label}
             </Link>
           ))}
+
+          {session ? (
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-sans text-muted-foreground">
+                {profile?.name || profile?.email}
+              </span>
+              <button
+                onClick={handleSignOut}
+                className="p-2 rounded-full bg-card border border-border hover:bg-muted transition-colors"
+                aria-label="Sign out"
+              >
+                <LogOut size={16} className="text-foreground" />
+              </button>
+            </div>
+          ) : (
+            <Link
+              to="/auth"
+              className="px-4 py-2 bg-primary text-primary-foreground text-sm font-sans rounded-lg hover:opacity-90 transition-opacity"
+            >
+              Sign In
+            </Link>
+          )}
+
           <button
             onClick={toggleTheme}
             className="p-2 rounded-full bg-card border border-border hover:bg-muted transition-colors"
@@ -100,6 +132,22 @@ const Navbar = () => {
                   {link.label}
                 </Link>
               ))}
+              {session ? (
+                <button
+                  onClick={() => { setIsOpen(false); handleSignOut(); }}
+                  className="text-sm font-sans text-muted-foreground py-2 text-left"
+                >
+                  Sign Out
+                </button>
+              ) : (
+                <Link
+                  to="/auth"
+                  onClick={() => setIsOpen(false)}
+                  className="text-sm font-sans text-foreground font-bold py-2"
+                >
+                  Sign In
+                </Link>
+              )}
             </div>
           </motion.div>
         )}
