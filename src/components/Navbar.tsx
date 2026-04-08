@@ -136,12 +136,21 @@ const Navbar = () => {
                 </Link>
               ))}
               {session ? (
-                <button
-                  onClick={() => { setIsOpen(false); handleSignOut(); }}
-                  className="text-sm font-sans text-muted-foreground py-2 text-left"
-                >
-                  Sign Out
-                </button>
+                <>
+                  <Link
+                    to="/profile"
+                    onClick={() => setIsOpen(false)}
+                    className="text-sm font-sans text-muted-foreground py-2"
+                  >
+                    My Profile
+                  </Link>
+                  <button
+                    onClick={() => { setIsOpen(false); handleSignOut(); }}
+                    className="text-sm font-sans text-muted-foreground py-2 text-left"
+                  >
+                    Sign Out
+                  </button>
+                </>
               ) : (
                 <Link
                   to="/auth"
