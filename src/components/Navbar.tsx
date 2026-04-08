@@ -50,9 +50,12 @@ const Navbar = () => {
 
           {session ? (
             <div className="flex items-center gap-3">
-              <span className="text-xs font-sans text-muted-foreground">
-                {profile?.name || profile?.email}
-              </span>
+              <Link
+                to="/profile"
+                className="text-xs font-sans text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {profile?.name || profile?.email || "Profile"}
+              </Link>
               <button
                 onClick={handleSignOut}
                 className="p-2 rounded-full bg-card border border-border hover:bg-muted transition-colors"

@@ -12,6 +12,9 @@ import BlogPost from "./pages/BlogPost.tsx";
 import HealthGuide from "./pages/HealthGuide.tsx";
 import BookConsultation from "./pages/BookConsultation.tsx";
 import Auth from "./pages/Auth.tsx";
+import ForgotPassword from "./pages/ForgotPassword.tsx";
+import ResetPassword from "./pages/ResetPassword.tsx";
+import Profile from "./pages/Profile.tsx";
 import AdminDashboard from "./pages/AdminDashboard.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
@@ -31,6 +34,16 @@ const App = () => (
               <Route path="/blog/:slug" element={<BlogPost />} />
               <Route path="/health-guide" element={<HealthGuide />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <Profile />
+                  </ProtectedRoute>
+                }
+              />
               <Route
                 path="/book-consultation"
                 element={

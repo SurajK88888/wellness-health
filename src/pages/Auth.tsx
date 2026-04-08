@@ -135,6 +135,14 @@ const LoginForm = () => {
           </button>
         </div>
       </div>
+      <div className="flex justify-end">
+        <Link
+          to="/forgot-password"
+          className="text-xs text-muted-foreground hover:text-foreground font-sans transition-colors"
+        >
+          Forgot password?
+        </Link>
+      </div>
       <button
         type="submit"
         disabled={submitting}
