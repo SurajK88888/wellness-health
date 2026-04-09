@@ -1,3 +1,11 @@
+/**
+ * RESET PASSWORD PAGE
+ * Works with the password recovery flow triggered from ForgotPassword page.
+ * See ForgotPassword.tsx for full email domain setup instructions.
+ * 
+ * The redirectTo URL in ForgotPassword sends users here with a recovery token.
+ * Supabase fires a PASSWORD_RECOVERY auth event which this page listens for.
+ */
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
