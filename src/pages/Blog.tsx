@@ -4,62 +4,17 @@ import { motion } from "framer-motion";
 import { Clock, ArrowRight } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import blogProtein from "@/assets/blog-protein.jpg";
-import blogYoga from "@/assets/blog-yoga.jpg";
-import blogNutrition from "@/assets/blog-nutrition.jpg";
-import blogMindfulness from "@/assets/blog-mindfulness.jpg";
-
-const allArticles = [
-  {
-    slug: "natural-protein-muscle-recovery",
-    title: "5 Benefits of Natural Protein for Muscle Recovery",
-    excerpt: "Discover how plant-based proteins support recovery and long-term muscle health.",
-    category: "Nutrition",
-    readTime: "6 min read",
-    image: blogProtein,
-    author: "Dr. Elena Park",
-    date: "March 15, 2026",
-  },
-  {
-    slug: "morning-yoga-routine",
-    title: "The Morning Yoga Routine That Changed Everything",
-    excerpt: "A gentle 15-minute flow designed to align your body and calm your mind.",
-    category: "Fitness",
-    readTime: "5 min read",
-    image: blogYoga,
-    author: "Maya Chen",
-    date: "March 10, 2026",
-  },
-  {
-    slug: "balanced-meal-prep",
-    title: "Balanced Meal Prep: A Week of Whole Foods",
-    excerpt: "Simple, nutrient-dense meal ideas that make healthy eating effortless.",
-    category: "Nutrition",
-    readTime: "8 min read",
-    image: blogNutrition,
-    author: "Chef Liam Torres",
-    date: "March 5, 2026",
-  },
-  {
-    slug: "mindfulness-forest-bathing",
-    title: "Forest Bathing: The Science of Mindful Nature Walks",
-    excerpt: "How spending time in nature reduces cortisol, boosts immunity, and restores mental clarity.",
-    category: "Lifestyle",
-    readTime: "7 min read",
-    image: blogMindfulness,
-    author: "Dr. Aiko Sato",
-    date: "February 28, 2026",
-  },
-];
-
-const categories = ["All", "Nutrition", "Fitness", "Lifestyle"];
+import SearchBar from "@/components/SearchBar";
+import CategoryFilter from "@/components/CategoryFilter";
+import { usePublishedBlogs } from "@/hooks/use-blogs";
 
 const Blog = () => {
   const [activeCategory, setActiveCategory] = useState("All");
+  const [search, setSearch] = useState("");
+  const { data: blogs = [], isLoading } = usePublishedBlogs(activeCategory, search);
 
-  const filtered = activeCategory === "All"
-    ? allArticles
-    : allArticles.filter((a) => a.category === activeCategory);
+  // Derive categories from fetched blogs
+  const categories = ["All", ...Array.from(new Set(blogs.map(b => b.category)))];
 
   return (
     <div className="min-h-screen">
@@ -78,64 +33,64 @@ const Blog = () => {
             </p>
           </motion.div>
 
-          {/* Category filters */}
-          <div className="flex flex-wrap justify-center gap-3 mb-12">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                className={`px-5 py-2 rounded-full text-sm font-sans tracking-wide transition-all duration-200 ${
-                  activeCategory === cat
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-card text-muted-foreground hover:text-foreground border border-border"
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
+          {/* Search & Filter */}
+          <div className="flex flex-col md:flex-row items-center gap-4 mb-12">
+            <SearchBar value={search} onChange={setSearch} placeholder="Search articles..." />
+            <CategoryFilter categories={categories} active={activeCategory} onChange={setActiveCategory} />
           </div>
 
           {/* Articles grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {filtered.map((article, i) => (
-              <motion.div
-                key={article.slug}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: i * 0.1 }}
-              >
-                <Link to={`/blog/${article.slug}`} className="group block">
-                  <div className="glass-card rounded-xl overflow-hidden hover-lift">
-                    <div className="aspect-[16/9] overflow-hidden">
-                      <img
-                        src={article.image}
-                        alt={article.title}
-                        loading="lazy"
-                        width={800}
-                        height={450}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                    </div>
-                    <div className="p-6">
-                      <div className="flex items-center gap-3 mb-3">
-                        <span className="text-xs uppercase tracking-widest text-accent font-sans font-bold">{article.category}</span>
-                        <span className="flex items-center gap-1 text-xs text-muted-foreground"><Clock size={12} />{article.readTime}</span>
-                        <span className="text-xs text-muted-foreground">{article.date}</span>
+          {isLoading ? (
+            <div className="text-center py-20">
+              <p className="text-muted-foreground font-sans animate-pulse">Loading articles...</p>
+            </div>
+          ) : blogs.length === 0 ? (
+            <div className="text-center py-20">
+              <p className="text-muted-foreground font-sans">
+                {search ? `No articles found for "${search}"` : "No articles published yet. Check back soon!"}
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {blogs.map((article, i) => (
+                <motion.div
+                  key={article.id}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: i * 0.1 }}
+                >
+                  <Link to={`/blog/${article.slug}`} className="group block">
+                    <div className="glass-card rounded-xl overflow-hidden hover-lift">
+                      {article.featured_image && (
+                        <div className="aspect-[16/9] overflow-hidden">
+                          <img
+                            src={article.featured_image}
+                            alt={article.title}
+                            loading="lazy"
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          />
+                        </div>
+                      )}
+                      <div className="p-6">
+                        <div className="flex items-center gap-3 mb-3">
+                          <span className="text-xs uppercase tracking-widest text-accent font-sans font-bold">{article.category}</span>
+                          <span className="text-xs text-muted-foreground">{new Date(article.created_at).toLocaleDateString()}</span>
+                        </div>
+                        <h2 className="font-serif text-xl font-semibold text-foreground mb-2 group-hover:text-secondary transition-colors">{article.title}</h2>
+                        <p className="text-sm text-muted-foreground leading-relaxed mb-4">{article.excerpt}</p>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-muted-foreground font-sans">By {article.author_name}</span>
+                          <span className="flex items-center gap-1 text-sm text-accent font-sans font-bold group-hover:gap-2 transition-all">
+                            Read <ArrowRight size={14} />
+                          </span>
+                        </div>
                       </div>
-                      <h2 className="font-serif text-xl font-semibold text-foreground mb-2 group-hover:text-secondary transition-colors">{article.title}</h2>
-                      <p className="text-sm text-muted-foreground leading-relaxed mb-4">{article.excerpt}</p>
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-muted-foreground font-sans">By {article.author}</span>
-                        <span className="flex items-center gap-1 text-sm text-accent font-sans font-bold group-hover:gap-2 transition-all">
-                          Read <ArrowRight size={14} />
-                        </span>
-                      </div>
                     </div>
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
-          </div>
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
       <Footer />
