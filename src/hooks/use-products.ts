@@ -1,12 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 
 export interface Product {
   id: string;
   name: string;
   description: string;
-  ingredients: string[] | Record<string, unknown>[];
-  benefits: string[] | Record<string, unknown>[];
+  ingredients: Json;
+  benefits: Json;
   usage_instructions: string;
   image_url: string | null;
   video_url: string | null;
