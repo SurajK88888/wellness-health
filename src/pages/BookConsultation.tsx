@@ -1,10 +1,72 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { Video, Calendar, Clock, CheckCircle } from "lucide-react";
+import { Video, Calendar, Clock, CheckCircle, AlertCircle } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import consultantImg from "@/assets/consultant.jpg";
+import { useAuth } from "@/contexts/AuthContext";
+import { useMeetingMutations, useUserMeetings } from "@/hooks/use-meetings";
+import { toast } from "sonner";
 
 const BookConsultation = () => {
+  const { user } = useAuth();
+  const { data: meetings = [] } = useUserMeetings(user?.id);
+  const { createMeeting, updateMeeting } = useMeetingMutations();
+
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    platform: "Zoom",
+    notes: "",
+    date: "",
+    time: "",
+  });
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+    if (!formData.date || !formData.time) {
+      toast.error("Please select a date and time");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const meetingDate = new Date(`${formData.date}T${formData.time}`).toISOString();
+      await createMeeting.mutateAsync({
+        user_id: user.id,
+        meeting_date: meetingDate,
+        platform: formData.platform,
+        notes: formData.notes || null,
+        meeting_link: null,
+        status: "scheduled",
+      });
+      toast.success("Consultation booked! You'll receive a meeting link via email.");
+      setFormData({ name: "", email: "", platform: "Zoom", notes: "", date: "", time: "" });
+    } catch (err: any) {
+      toast.error(err.message || "Failed to book");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleCancel = async (id: string) => {
+    if (!confirm("Cancel this meeting?")) return;
+    try {
+      await updateMeeting.mutateAsync({ id, status: "cancelled" });
+      toast.success("Meeting cancelled");
+    } catch (err: any) { toast.error(err.message); }
+  };
+
+  const upcomingMeetings = meetings.filter(m => m.status === "scheduled");
+  const pastMeetings = meetings.filter(m => m.status !== "scheduled");
+
+  // Generate min date (tomorrow)
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const minDate = tomorrow.toISOString().split("T")[0];
+
   return (
     <div className="min-h-screen">
       <Navbar />
@@ -83,18 +145,14 @@ const BookConsultation = () => {
               <div className="glass-card-elevated rounded-xl p-8">
                 <h3 className="font-serif text-xl font-semibold text-foreground mb-6">Schedule Your Session</h3>
 
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    window.open("https://calendly.com", "_blank");
-                  }}
-                  className="space-y-5"
-                >
+                <form onSubmit={handleSubmit} className="space-y-5">
                   <div>
                     <label className="block text-sm font-sans font-bold text-foreground mb-2">Full Name</label>
                     <input
                       type="text"
                       required
+                      value={formData.name}
+                      onChange={e => setFormData(f => ({ ...f, name: e.target.value }))}
                       className="w-full px-4 py-3 rounded-lg bg-card border border-border text-foreground font-sans text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent"
                       placeholder="Your full name"
                     />
@@ -105,9 +163,35 @@ const BookConsultation = () => {
                     <input
                       type="email"
                       required
+                      value={formData.email}
+                      onChange={e => setFormData(f => ({ ...f, email: e.target.value }))}
                       className="w-full px-4 py-3 rounded-lg bg-card border border-border text-foreground font-sans text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent"
                       placeholder="your@email.com"
                     />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-sans font-bold text-foreground mb-2">Date</label>
+                      <input
+                        type="date"
+                        required
+                        min={minDate}
+                        value={formData.date}
+                        onChange={e => setFormData(f => ({ ...f, date: e.target.value }))}
+                        className="w-full px-4 py-3 rounded-lg bg-card border border-border text-foreground font-sans text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-sans font-bold text-foreground mb-2">Time</label>
+                      <input
+                        type="time"
+                        required
+                        value={formData.time}
+                        onChange={e => setFormData(f => ({ ...f, time: e.target.value }))}
+                        className="w-full px-4 py-3 rounded-lg bg-card border border-border text-foreground font-sans text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                      />
+                    </div>
                   </div>
 
                   <div>
@@ -115,7 +199,14 @@ const BookConsultation = () => {
                     <div className="flex gap-3">
                       {["Zoom", "Google Meet"].map((platform) => (
                         <label key={platform} className="flex items-center gap-2 px-4 py-3 rounded-lg bg-card border border-border cursor-pointer hover:border-accent transition-colors flex-1">
-                          <input type="radio" name="platform" value={platform} defaultChecked={platform === "Zoom"} className="accent-secondary" />
+                          <input
+                            type="radio"
+                            name="platform"
+                            value={platform}
+                            checked={formData.platform === platform}
+                            onChange={e => setFormData(f => ({ ...f, platform: e.target.value }))}
+                            className="accent-secondary"
+                          />
                           <span className="text-sm font-sans text-foreground">{platform}</span>
                         </label>
                       ))}
@@ -126,6 +217,8 @@ const BookConsultation = () => {
                     <label className="block text-sm font-sans font-bold text-foreground mb-2">What would you like to discuss?</label>
                     <textarea
                       rows={4}
+                      value={formData.notes}
+                      onChange={e => setFormData(f => ({ ...f, notes: e.target.value }))}
                       className="w-full px-4 py-3 rounded-lg bg-card border border-border text-foreground font-sans text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent resize-none"
                       placeholder="Share your wellness goals or concerns..."
                     />
@@ -133,9 +226,10 @@ const BookConsultation = () => {
 
                   <button
                     type="submit"
-                    className="w-full px-8 py-4 bg-primary text-primary-foreground font-sans text-sm tracking-wide rounded-lg hover:opacity-90 transition-opacity"
+                    disabled={submitting}
+                    className="w-full px-8 py-4 bg-primary text-primary-foreground font-sans text-sm tracking-wide rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50"
                   >
-                    Book Free Health Consultation
+                    {submitting ? "Booking..." : "Book Free Health Consultation"}
                   </button>
 
                   <p className="text-xs text-center text-muted-foreground">
@@ -145,6 +239,80 @@ const BookConsultation = () => {
               </div>
             </motion.div>
           </div>
+
+          {/* My Meetings Section */}
+          {meetings.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="mt-20"
+            >
+              <h2 className="font-serif text-2xl md:text-3xl font-bold text-foreground mb-8">My Meetings</h2>
+
+              {upcomingMeetings.length > 0 && (
+                <div className="mb-8">
+                  <h3 className="font-sans text-sm uppercase tracking-widest text-accent font-bold mb-4">Upcoming</h3>
+                  <div className="space-y-3">
+                    {upcomingMeetings.map(meeting => (
+                      <div key={meeting.id} className="glass-card rounded-xl p-5 flex flex-col sm:flex-row sm:items-center gap-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-1">
+                            <Calendar size={14} className="text-secondary" />
+                            <span className="font-sans text-sm font-semibold text-foreground">
+                              {new Date(meeting.meeting_date).toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
+                            </span>
+                            <span className="text-sm text-muted-foreground font-sans">
+                              {new Date(meeting.meeting_date).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground font-sans">{meeting.platform}</span>
+                            {meeting.meeting_link && (
+                              <a href={meeting.meeting_link} target="_blank" rel="noopener noreferrer" className="text-xs text-accent hover:underline">
+                                Join Meeting →
+                              </a>
+                            )}
+                          </div>
+                          {meeting.notes && <p className="text-xs text-muted-foreground mt-1">{meeting.notes}</p>}
+                        </div>
+                        <button
+                          onClick={() => handleCancel(meeting.id)}
+                          className="px-4 py-2 rounded-md text-xs font-sans font-medium bg-destructive/15 text-destructive hover:bg-destructive/25 transition-colors self-start"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {pastMeetings.length > 0 && (
+                <div>
+                  <h3 className="font-sans text-sm uppercase tracking-widest text-accent font-bold mb-4">Past</h3>
+                  <div className="space-y-3">
+                    {pastMeetings.map(meeting => (
+                      <div key={meeting.id} className="glass-card rounded-xl p-5 flex items-center gap-4 opacity-70">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3">
+                            <span className="font-sans text-sm text-foreground">
+                              {new Date(meeting.meeting_date).toLocaleDateString()}
+                            </span>
+                            <span className={`px-2 py-0.5 rounded text-xs font-sans font-medium ${
+                              meeting.status === "completed" ? "bg-secondary/15 text-secondary" : "bg-destructive/15 text-destructive"
+                            }`}>
+                              {meeting.status}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          )}
         </div>
       </div>
       <Footer />
