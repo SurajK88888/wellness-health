@@ -14,6 +14,132 @@ export type Database = {
   }
   public: {
     Tables: {
+      blogs: {
+        Row: {
+          author_id: string | null
+          author_name: string
+          category: string
+          content: string
+          created_at: string
+          excerpt: string
+          featured_image: string | null
+          id: string
+          published: boolean
+          slug: string
+          tags: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_id?: string | null
+          author_name?: string
+          category?: string
+          content?: string
+          created_at?: string
+          excerpt?: string
+          featured_image?: string | null
+          id?: string
+          published?: boolean
+          slug: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string | null
+          author_name?: string
+          category?: string
+          content?: string
+          created_at?: string
+          excerpt?: string
+          featured_image?: string | null
+          id?: string
+          published?: boolean
+          slug?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      meetings: {
+        Row: {
+          created_at: string
+          id: string
+          meeting_date: string
+          meeting_link: string | null
+          notes: string | null
+          platform: string
+          status: Database["public"]["Enums"]["meeting_status"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          meeting_date: string
+          meeting_link?: string | null
+          notes?: string | null
+          platform?: string
+          status?: Database["public"]["Enums"]["meeting_status"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          meeting_date?: string
+          meeting_link?: string | null
+          notes?: string | null
+          platform?: string
+          status?: Database["public"]["Enums"]["meeting_status"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          benefits: Json | null
+          category: string
+          created_at: string
+          description: string
+          id: string
+          image_url: string | null
+          ingredients: Json | null
+          name: string
+          tags: string[] | null
+          updated_at: string
+          usage_instructions: string
+          video_url: string | null
+        }
+        Insert: {
+          benefits?: Json | null
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          image_url?: string | null
+          ingredients?: Json | null
+          name: string
+          tags?: string[] | null
+          updated_at?: string
+          usage_instructions?: string
+          video_url?: string | null
+        }
+        Update: {
+          benefits?: Json | null
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          image_url?: string | null
+          ingredients?: Json | null
+          name?: string
+          tags?: string[] | null
+          updated_at?: string
+          usage_instructions?: string
+          video_url?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           consultation_history: Json | null
@@ -78,6 +204,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      meeting_status: "scheduled" | "completed" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -206,6 +333,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      meeting_status: ["scheduled", "completed", "cancelled"],
     },
   },
 } as const
