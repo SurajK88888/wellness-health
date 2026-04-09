@@ -5,8 +5,8 @@ export interface Product {
   id: string;
   name: string;
   description: string;
-  ingredients: unknown;
-  benefits: unknown;
+  ingredients: string[] | Record<string, unknown>[];
+  benefits: string[] | Record<string, unknown>[];
   usage_instructions: string;
   image_url: string | null;
   video_url: string | null;
