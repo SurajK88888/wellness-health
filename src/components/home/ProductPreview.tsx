@@ -1,17 +1,14 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
-import productSupplements from "@/assets/product-supplements.jpg";
-import productOils from "@/assets/product-oils.jpg";
-import productTea from "@/assets/product-tea.jpg";
-
-const products = [
-  { image: productSupplements, title: "Organic Supplements", desc: "Plant-based wellness essentials" },
-  { image: productOils, title: "Essential Oils", desc: "Pure botanical aromatherapy" },
-  { image: productTea, title: "Herbal Tea Collection", desc: "Handcrafted healing blends" },
-];
+import { useProducts } from "@/hooks/use-products";
 
 const ProductPreview = () => {
+  const { data: products = [] } = useProducts();
+  const preview = products.slice(0, 3);
+
+  if (preview.length === 0) return null;
+
   return (
     <section className="section-padding bg-card">
       <div className="container-wellness">
@@ -26,9 +23,9 @@ const ProductPreview = () => {
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {products.map((product, i) => (
+          {preview.map((product, i) => (
             <motion.div
-              key={product.title}
+              key={product.id}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -36,19 +33,19 @@ const ProductPreview = () => {
               className="group"
             >
               <div className="glass-card-elevated rounded-xl overflow-hidden hover-lift">
-                <div className="aspect-square overflow-hidden">
-                  <img
-                    src={product.image}
-                    alt={product.title}
-                    loading="lazy"
-                    width={800}
-                    height={800}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                </div>
+                {product.image_url && (
+                  <div className="aspect-square overflow-hidden">
+                    <img
+                      src={product.image_url}
+                      alt={product.name}
+                      loading="lazy"
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  </div>
+                )}
                 <div className="p-6 text-center">
-                  <h3 className="font-serif text-xl font-semibold text-foreground mb-1">{product.title}</h3>
-                  <p className="text-sm text-muted-foreground">{product.desc}</p>
+                  <h3 className="font-serif text-xl font-semibold text-foreground mb-1">{product.name}</h3>
+                  <p className="text-sm text-muted-foreground">{product.description.slice(0, 60)}</p>
                 </div>
               </div>
             </motion.div>
