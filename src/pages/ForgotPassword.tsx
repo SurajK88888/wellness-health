@@ -1,3 +1,19 @@
+/**
+ * EMAIL DOMAIN SETUP STEPS (Verdant Auth Emails):
+ * 
+ * 1. Go to Lovable Cloud → Emails → Set up email domain
+ * 2. Enter your sender domain (e.g., notify.verdantwellness.com)
+ * 3. Add the provided DNS records (NS records) at your domain registrar
+ * 4. Wait for DNS verification (up to 72 hours)
+ * 5. Once verified, scaffold auth email templates via Lovable
+ *    - This creates branded templates for: signup, recovery, magic-link, invite, email-change, reauthentication
+ * 6. Templates are deployed as an Edge Function (auth-email-hook)
+ * 7. Monitor status in Cloud → Emails
+ * 
+ * Demo sender: noreply@notify.verdantwellness.com (configure after domain setup)
+ * 
+ * Current flow: Uses default Supabase auth emails until custom domain is configured.
+ */
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
