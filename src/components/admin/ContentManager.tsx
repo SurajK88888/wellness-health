@@ -195,11 +195,22 @@ const ContentManager = () => {
     } catch (err: any) { toast.error(err.message); }
   };
 
-  // ── Meeting status update ──
-  const handleMeetingStatus = async (id: string, status: "scheduled" | "completed" | "cancelled") => {
+  // ── Meeting status + link update ──
+  const handleMeetingStatus = async (id: string, status: "scheduled" | "completed" | "cancelled" | "pending" | "confirmed") => {
     try {
       await updateMeeting.mutateAsync({ id, status });
       toast.success(`Meeting marked as ${status}`);
+    } catch (err: any) { toast.error(err.message); }
+  };
+
+  const [meetingLinkInputs, setMeetingLinkInputs] = useState<Record<string, string>>({});
+
+  const handleSaveMeetingLink = async (id: string) => {
+    const link = meetingLinkInputs[id]?.trim();
+    if (!link) { toast.error("Please enter a meeting link"); return; }
+    try {
+      await updateMeeting.mutateAsync({ id, meeting_link: link });
+      toast.success("Meeting link saved");
     } catch (err: any) { toast.error(err.message); }
   };
 
