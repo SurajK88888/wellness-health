@@ -41,7 +41,7 @@ const BookConsultation = () => {
         platform: formData.platform,
         notes: formData.notes || null,
         meeting_link: null,
-        status: "scheduled",
+        status: "pending",
       });
       toast.success("Consultation booked! You'll receive a meeting link via email.");
       setFormData({ name: "", email: "", platform: "Zoom", notes: "", date: "", time: "" });
@@ -60,8 +60,8 @@ const BookConsultation = () => {
     } catch (err: any) { toast.error(err.message); }
   };
 
-  const upcomingMeetings = meetings.filter(m => m.status === "scheduled");
-  const pastMeetings = meetings.filter(m => m.status !== "scheduled");
+  const upcomingMeetings = meetings.filter(m => m.status === "scheduled" || m.status === "pending" || m.status === "confirmed");
+  const pastMeetings = meetings.filter(m => m.status === "completed" || m.status === "cancelled");
 
   // Generate min date (tomorrow)
   const tomorrow = new Date();
