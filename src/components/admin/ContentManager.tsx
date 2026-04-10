@@ -638,46 +638,105 @@ const ContentManager = () => {
               <p className="text-muted-foreground font-sans">No meetings booked yet.</p>
             </div>
           ) : (
-            <div className="space-y-3">
-              {meetings.map(meeting => (
-                <div key={meeting.id} className="glass-card rounded-xl p-4 flex items-center gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3">
-                      <span className="font-sans text-sm font-semibold text-foreground">
-                        {new Date(meeting.meeting_date).toLocaleDateString()} at {new Date(meeting.meeting_date).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+            <div className="space-y-4">
+              {meetings.map(meeting => {
+                const statusColors: Record<string, string> = {
+                  confirmed: "bg-secondary/15 text-secondary",
+                  scheduled: "bg-secondary/15 text-secondary",
+                  pending: "bg-amber-100 text-amber-700",
+                  completed: "bg-muted text-muted-foreground",
+                  cancelled: "bg-destructive/15 text-destructive",
+                };
+                const statusIcons: Record<string, React.ElementType> = {
+                  confirmed: CheckCircle,
+                  scheduled: Clock,
+                  pending: Clock,
+                  completed: CheckCircle,
+                  cancelled: Ban,
+                };
+                const StatusIcon = statusIcons[meeting.status] || Clock;
+                const linkValue = meetingLinkInputs[meeting.id] ?? meeting.meeting_link ?? "";
+
+                return (
+                  <div key={meeting.id} className="glass-card-elevated rounded-xl p-5 space-y-4">
+                    {/* Header row */}
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-3 mb-1">
+                          <Calendar size={14} className="text-secondary shrink-0" />
+                          <span className="font-sans text-sm font-semibold text-foreground">
+                            {new Date(meeting.meeting_date).toLocaleDateString(undefined, { weekday: "short", month: "long", day: "numeric" })}
+                          </span>
+                          <span className="text-sm text-muted-foreground font-sans">
+                            {new Date(meeting.meeting_date).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Video size={12} className="text-muted-foreground" />
+                          <span className="text-xs text-muted-foreground font-sans">{meeting.platform}</span>
+                        </div>
+                        {meeting.notes && (
+                          <p className="text-xs text-muted-foreground font-sans mt-2 line-clamp-2">{meeting.notes}</p>
+                        )}
+                      </div>
+
+                      {/* Status badge */}
+                      <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-sans font-medium shrink-0 ${statusColors[meeting.status] || ""}`}>
+                        <StatusIcon size={12} />
+                        {meeting.status}
                       </span>
-                      <span className={`px-2 py-0.5 rounded text-xs font-sans font-medium ${
-                        meeting.status === "scheduled" ? "bg-secondary/15 text-secondary" :
-                        meeting.status === "completed" ? "bg-accent/15 text-accent" :
-                        "bg-destructive/15 text-destructive"
-                      }`}>{meeting.status}</span>
-                      <span className="text-xs text-muted-foreground font-sans">{meeting.platform}</span>
                     </div>
-                    {meeting.notes && <p className="text-xs text-muted-foreground font-sans mt-1 truncate">{meeting.notes}</p>}
-                    {meeting.meeting_link && (
-                      <a href={meeting.meeting_link} target="_blank" rel="noopener noreferrer" className="text-xs text-accent hover:underline mt-1 inline-block">
-                        Meeting Link →
-                      </a>
+
+                    {/* Google Meet Link input */}
+                    <div>
+                      <label className="block text-xs font-sans font-bold text-foreground mb-1.5">
+                        <LinkIcon size={12} className="inline mr-1" />
+                        Google Meet Link
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          value={linkValue}
+                          onChange={e => setMeetingLinkInputs(prev => ({ ...prev, [meeting.id]: e.target.value }))}
+                          className="flex-1 px-3 py-2 rounded-lg bg-card border border-border text-foreground font-sans text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                          placeholder="https://meet.google.com/..."
+                        />
+                        <button
+                          onClick={() => handleSaveMeetingLink(meeting.id)}
+                          className="flex items-center gap-1.5 px-4 py-2 bg-secondary text-secondary-foreground rounded-lg text-xs font-sans font-medium hover:opacity-90 transition-opacity"
+                        >
+                          <Save size={12} /> Save
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Status actions */}
+                    {meeting.status !== "completed" && meeting.status !== "cancelled" && (
+                      <div className="flex flex-wrap gap-2 pt-1">
+                        {meeting.status !== "confirmed" && (
+                          <button
+                            onClick={() => handleMeetingStatus(meeting.id, "confirmed")}
+                            className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-sans font-medium bg-secondary/20 text-secondary hover:bg-secondary/30 transition-colors"
+                          >
+                            <CheckCircle size={12} /> Confirm
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleMeetingStatus(meeting.id, "completed")}
+                          className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-sans font-medium bg-muted text-muted-foreground hover:bg-muted/80 transition-colors"
+                        >
+                          <CheckCircle size={12} /> Complete
+                        </button>
+                        <button
+                          onClick={() => handleMeetingStatus(meeting.id, "cancelled")}
+                          className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-sans font-medium bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors"
+                        >
+                          <Ban size={12} /> Cancel
+                        </button>
+                      </div>
                     )}
                   </div>
-                  {meeting.status === "scheduled" && (
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleMeetingStatus(meeting.id, "completed")}
-                        className="px-3 py-1.5 rounded-md text-xs font-sans font-medium bg-secondary/20 text-secondary hover:bg-secondary/30 transition-colors"
-                      >
-                        Complete
-                      </button>
-                      <button
-                        onClick={() => handleMeetingStatus(meeting.id, "cancelled")}
-                        className="px-3 py-1.5 rounded-md text-xs font-sans font-medium bg-destructive/15 text-destructive hover:bg-destructive/25 transition-colors"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
