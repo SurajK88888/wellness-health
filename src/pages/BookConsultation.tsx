@@ -242,78 +242,42 @@ const BookConsultation = () => {
           </div>
 
           {/* My Meetings Section */}
-          {meetings.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="mt-20"
-            >
-              <h2 className="font-serif text-2xl md:text-3xl font-bold text-foreground mb-8">My Meetings</h2>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="mt-20"
+          >
+            <h2 className="font-serif text-2xl md:text-3xl font-bold text-foreground mb-8">My Meetings</h2>
 
-              {upcomingMeetings.length > 0 && (
-                <div className="mb-8">
-                  <h3 className="font-sans text-sm uppercase tracking-widest text-accent font-bold mb-4">Upcoming</h3>
-                  <div className="space-y-3">
-                    {upcomingMeetings.map(meeting => (
-                      <div key={meeting.id} className="glass-card rounded-xl p-5 flex flex-col sm:flex-row sm:items-center gap-4">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-1">
-                            <Calendar size={14} className="text-secondary" />
-                            <span className="font-sans text-sm font-semibold text-foreground">
-                              {new Date(meeting.meeting_date).toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
-                            </span>
-                            <span className="text-sm text-muted-foreground font-sans">
-                              {new Date(meeting.meeting_date).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs text-muted-foreground font-sans">{meeting.platform}</span>
-                            {meeting.meeting_link && (
-                              <a href={meeting.meeting_link} target="_blank" rel="noopener noreferrer" className="text-xs text-accent hover:underline">
-                                Join Meeting →
-                              </a>
-                            )}
-                          </div>
-                          {meeting.notes && <p className="text-xs text-muted-foreground mt-1">{meeting.notes}</p>}
-                        </div>
-                        <button
-                          onClick={() => handleCancel(meeting.id)}
-                          className="px-4 py-2 rounded-md text-xs font-sans font-medium bg-destructive/15 text-destructive hover:bg-destructive/25 transition-colors self-start"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    ))}
+            {meetings.length === 0 ? (
+              <MeetingEmptyState />
+            ) : (
+              <>
+                {upcomingMeetings.length > 0 && (
+                  <div className="mb-8">
+                    <h3 className="font-sans text-sm uppercase tracking-widest text-accent font-bold mb-4">Upcoming</h3>
+                    <div className="space-y-4">
+                      {upcomingMeetings.map(meeting => (
+                        <MeetingCard key={meeting.id} meeting={meeting} onCancel={handleCancel} />
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {pastMeetings.length > 0 && (
-                <div>
-                  <h3 className="font-sans text-sm uppercase tracking-widest text-accent font-bold mb-4">Past</h3>
-                  <div className="space-y-3">
-                    {pastMeetings.map(meeting => (
-                      <div key={meeting.id} className="glass-card rounded-xl p-5 flex items-center gap-4 opacity-70">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3">
-                            <span className="font-sans text-sm text-foreground">
-                              {new Date(meeting.meeting_date).toLocaleDateString()}
-                            </span>
-                            <span className={`px-2 py-0.5 rounded text-xs font-sans font-medium ${
-                              meeting.status === "completed" ? "bg-secondary/15 text-secondary" : "bg-destructive/15 text-destructive"
-                            }`}>
-                              {meeting.status}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                {pastMeetings.length > 0 && (
+                  <div>
+                    <h3 className="font-sans text-sm uppercase tracking-widest text-accent font-bold mb-4">Past</h3>
+                    <div className="space-y-4">
+                      {pastMeetings.map(meeting => (
+                        <MeetingCard key={meeting.id} meeting={meeting} showActions={false} />
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
-            </motion.div>
-          )}
+                )}
+              </>
+            )}
+          </motion.div>
         </div>
       </div>
       <Footer />
