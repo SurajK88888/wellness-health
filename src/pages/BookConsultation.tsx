@@ -7,6 +7,7 @@ import consultantImg from "@/assets/consultant.jpg";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMeetingMutations, useUserMeetings } from "@/hooks/use-meetings";
 import { toast } from "sonner";
+import MeetingCard, { MeetingEmptyState } from "@/components/MeetingCard";
 
 const BookConsultation = () => {
   const { user } = useAuth();
