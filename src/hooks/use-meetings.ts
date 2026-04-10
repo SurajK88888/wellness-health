@@ -6,7 +6,7 @@ export interface Meeting {
   user_id: string;
   meeting_link: string | null;
   meeting_date: string;
-  status: "scheduled" | "completed" | "cancelled";
+  status: "scheduled" | "completed" | "cancelled" | "pending" | "confirmed";
   notes: string | null;
   platform: string;
   created_at: string;
