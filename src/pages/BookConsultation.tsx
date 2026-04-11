@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useMeetingMutations, useUserMeetings } from "@/hooks/use-meetings";
 import { toast } from "sonner";
 import MeetingCard, { MeetingEmptyState } from "@/components/MeetingCard";
+import { createNotification } from "@/hooks/use-notifications";
 
 const BookConsultation = () => {
   const { user } = useAuth();
@@ -35,7 +36,7 @@ const BookConsultation = () => {
     setSubmitting(true);
     try {
       const meetingDate = new Date(`${formData.date}T${formData.time}`).toISOString();
-      await createMeeting.mutateAsync({
+      const result = await createMeeting.mutateAsync({
         user_id: user.id,
         meeting_date: meetingDate,
         platform: formData.platform,
@@ -43,6 +44,23 @@ const BookConsultation = () => {
         meeting_link: null,
         status: "pending",
       });
+
+      // Notify all admins about new booking
+      const { data: adminRoles } = await (await import("@/integrations/supabase/client")).supabase
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "admin");
+      if (adminRoles) {
+        for (const admin of adminRoles) {
+          await createNotification({
+            userId: admin.user_id,
+            title: "New Consultation Booking",
+            message: `${formData.name} booked a session for ${new Date(meetingDate).toLocaleString()} via ${formData.platform}.`,
+            type: "booking",
+            relatedId: result?.id,
+          });
+        }
+      }
       toast.success("Consultation booked! You'll receive a meeting link via email.");
       setFormData({ name: "", email: "", platform: "Zoom", notes: "", date: "", time: "" });
     } catch (err: any) {
