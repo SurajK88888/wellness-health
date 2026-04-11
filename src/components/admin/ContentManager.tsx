@@ -731,7 +731,7 @@ const ContentManager = () => {
                           placeholder="https://meet.google.com/..."
                         />
                         <button
-                          onClick={() => handleSaveMeetingLink(meeting.id)}
+                          onClick={() => handleSaveMeetingLink(meeting)}
                           className="flex items-center gap-1.5 px-4 py-2 bg-secondary text-secondary-foreground rounded-lg text-xs font-sans font-medium hover:opacity-90 transition-opacity"
                         >
                           <Save size={12} /> Save
@@ -744,20 +744,20 @@ const ContentManager = () => {
                       <div className="flex flex-wrap gap-2 pt-1">
                         {meeting.status !== "confirmed" && (
                           <button
-                            onClick={() => handleMeetingStatus(meeting.id, "confirmed")}
+                            onClick={() => handleMeetingStatus(meeting, "confirmed")}
                             className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-sans font-medium bg-secondary/20 text-secondary hover:bg-secondary/30 transition-colors"
                           >
                             <CheckCircle size={12} /> Confirm
                           </button>
                         )}
                         <button
-                          onClick={() => handleMeetingStatus(meeting.id, "completed")}
+                          onClick={() => handleMeetingStatus(meeting, "completed")}
                           className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-sans font-medium bg-muted text-muted-foreground hover:bg-muted/80 transition-colors"
                         >
                           <CheckCircle size={12} /> Complete
                         </button>
                         <button
-                          onClick={() => handleMeetingStatus(meeting.id, "cancelled")}
+                          onClick={() => handleMeetingStatus(meeting, "cancelled")}
                           className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-sans font-medium bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors"
                         >
                           <Ban size={12} /> Cancel
