@@ -62,6 +62,17 @@ const BookConsultation = () => {
           });
         }
       }
+
+      // Trigger admin email alert via Edge Function
+      supabase.functions.invoke("notify-booking", {
+        body: {
+          userName: formData.name,
+          meetingDate,
+          platform: formData.platform,
+          notes: formData.notes,
+        },
+      }).catch(console.error); // fire-and-forget
+
       toast.success("Consultation booked! You'll receive a meeting link via email.");
       setFormData({ name: "", email: "", platform: "Zoom", notes: "", date: "", time: "" });
     } catch (err: any) {
