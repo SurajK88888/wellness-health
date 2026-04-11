@@ -4,6 +4,7 @@ import { Menu, X, Sun, Moon, LogOut, Shield } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "@/components/ThemeProvider";
 import { useAuth } from "@/contexts/AuthContext";
+import NotificationDropdown from "@/components/NotificationDropdown";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -72,6 +73,8 @@ const Navbar = () => {
               Sign In
             </Link>
           )}
+
+          {session && <NotificationDropdown />}
 
           <button
             onClick={toggleTheme}
