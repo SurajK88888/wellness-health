@@ -8,6 +8,7 @@ import { useAllMeetings, useMeetingMutations, type Meeting } from "@/hooks/use-m
 import { uploadContentImage, generateSlug } from "@/lib/supabase-helpers";
 import { toast } from "sonner";
 import type { Json } from "@/integrations/supabase/types";
+import { createNotification } from "@/hooks/use-notifications";
 
 type Tab = "blogs" | "products" | "meetings";
 
@@ -196,21 +197,50 @@ const ContentManager = () => {
   };
 
   // ── Meeting status + link update ──
-  const handleMeetingStatus = async (id: string, status: "scheduled" | "completed" | "cancelled" | "pending" | "confirmed") => {
+  const handleMeetingStatus = async (meeting: Meeting, status: "scheduled" | "completed" | "cancelled" | "pending" | "confirmed") => {
     try {
-      await updateMeeting.mutateAsync({ id, status });
+      await updateMeeting.mutateAsync({ id: meeting.id, status });
       toast.success(`Meeting marked as ${status}`);
+
+      // Send notification to the user
+      if (status === "confirmed") {
+        await createNotification({
+          userId: meeting.user_id,
+          title: "Meeting Confirmed",
+          message: `Your consultation on ${new Date(meeting.meeting_date).toLocaleString()} has been confirmed.`,
+          type: "confirmed",
+          relatedId: meeting.id,
+        });
+      } else if (status === "cancelled") {
+        // Notify admins about cancellation
+        await createNotification({
+          userId: meeting.user_id,
+          title: "Meeting Cancelled",
+          message: `Your consultation on ${new Date(meeting.meeting_date).toLocaleString()} has been cancelled.`,
+          type: "cancellation",
+          relatedId: meeting.id,
+        });
+      }
     } catch (err: any) { toast.error(err.message); }
   };
 
   const [meetingLinkInputs, setMeetingLinkInputs] = useState<Record<string, string>>({});
 
-  const handleSaveMeetingLink = async (id: string) => {
-    const link = meetingLinkInputs[id]?.trim();
+  const handleSaveMeetingLink = async (meeting: Meeting) => {
+    const link = meetingLinkInputs[meeting.id]?.trim();
     if (!link) { toast.error("Please enter a meeting link"); return; }
     try {
-      await updateMeeting.mutateAsync({ id, meeting_link: link });
+      await updateMeeting.mutateAsync({ id: meeting.id, meeting_link: link });
       toast.success("Meeting link saved");
+
+      // Notify user that a meeting link was added
+      await createNotification({
+        userId: meeting.user_id,
+        title: "Meeting Link Added",
+        message: `A Google Meet link has been added to your consultation on ${new Date(meeting.meeting_date).toLocaleString()}. Check your meetings to join.`,
+        type: "link_added",
+        relatedId: meeting.id,
+      });
     } catch (err: any) { toast.error(err.message); }
   };
 
