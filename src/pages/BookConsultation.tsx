@@ -86,6 +86,22 @@ const BookConsultation = () => {
     if (!confirm("Cancel this meeting?")) return;
     try {
       await updateMeeting.mutateAsync({ id, status: "cancelled" });
+      // Notify admins about cancellation
+      const { data: adminRoles } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "admin");
+      if (adminRoles) {
+        for (const admin of adminRoles) {
+          await createNotification({
+            userId: admin.user_id,
+            title: "Meeting Cancelled",
+            message: `A user cancelled their consultation.`,
+            type: "cancellation",
+            relatedId: id,
+          });
+        }
+      }
       toast.success("Meeting cancelled");
     } catch (err: any) { toast.error(err.message); }
   };
