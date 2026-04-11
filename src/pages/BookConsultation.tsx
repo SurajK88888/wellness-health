@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import consultantImg from "@/assets/consultant.jpg";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMeetingMutations, useUserMeetings } from "@/hooks/use-meetings";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import MeetingCard, { MeetingEmptyState } from "@/components/MeetingCard";
 import { createNotification } from "@/hooks/use-notifications";
