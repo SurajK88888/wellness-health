@@ -46,22 +46,8 @@ const BookConsultation = () => {
         status: "pending",
       });
 
-      // Notify all admins about new booking
-      const { data: adminRoles } = await (await import("@/integrations/supabase/client")).supabase
-        .from("user_roles")
-        .select("user_id")
-        .eq("role", "admin");
-      if (adminRoles) {
-        for (const admin of adminRoles) {
-          await createNotification({
-            userId: admin.user_id,
-            title: "New Consultation Booking",
-            message: `${formData.name} booked a session for ${new Date(meetingDate).toLocaleString()} via ${formData.platform}.`,
-            type: "booking",
-            relatedId: result?.id,
-          });
-        }
-      }
+      // Admin in-app notifications are inserted automatically by a DB trigger
+      // on the meetings table. Here we only fire the admin email alert.
 
       // Trigger admin email alert via Edge Function
       supabase.functions.invoke("notify-booking", {

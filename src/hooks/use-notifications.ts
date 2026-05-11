@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface Notification {
@@ -25,7 +26,6 @@ export function useNotifications(userId: string | undefined) {
       return (data || []) as Notification[];
     },
     enabled: !!userId,
-    refetchInterval: 30000, // poll every 30s
   });
 }
 
@@ -42,8 +42,31 @@ export function useUnreadCount(userId: string | undefined) {
       return count || 0;
     },
     enabled: !!userId,
-    refetchInterval: 15000,
   });
+}
+
+/**
+ * Subscribe to realtime INSERT/UPDATE events on notifications for the current user
+ * and invalidate queries so the navbar bell + pages refresh instantly.
+ */
+export function useNotificationsRealtime(userId: string | undefined) {
+  const qc = useQueryClient();
+  useEffect(() => {
+    if (!userId) return;
+    const channel = supabase
+      .channel(`notifications:${userId}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${userId}` },
+        () => {
+          qc.invalidateQueries({ queryKey: ["notifications"] });
+        }
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId, qc]);
 }
 
 export function useNotificationMutations() {
