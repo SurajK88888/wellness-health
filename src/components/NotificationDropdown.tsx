@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Bell } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNotifications, useUnreadCount, useNotificationMutations } from "@/hooks/use-notifications";
+import { useNotifications, useUnreadCount, useNotificationMutations, useNotificationsRealtime } from "@/hooks/use-notifications";
 import { Link } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 
@@ -17,6 +17,7 @@ const typeIcons: Record<string, string> = {
 
 const NotificationDropdown = () => {
   const { user } = useAuth();
+  useNotificationsRealtime(user?.id);
   const { data: notifications = [] } = useNotifications(user?.id);
   const { data: unreadCount = 0 } = useUnreadCount(user?.id);
   const { markAsRead, markAllAsRead } = useNotificationMutations();
