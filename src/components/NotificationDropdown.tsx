@@ -17,6 +17,7 @@ const typeIcons: Record<string, string> = {
 
 const NotificationDropdown = () => {
   const { user } = useAuth();
+  useNotificationsRealtime(user?.id);
   const { data: notifications = [] } = useNotifications(user?.id);
   const { data: unreadCount = 0 } = useUnreadCount(user?.id);
   const { markAsRead, markAllAsRead } = useNotificationMutations();
